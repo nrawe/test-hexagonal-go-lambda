@@ -2,7 +2,15 @@ AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: Test Microservice using AWS Lambda, Go, and Hexagonal architecture
 
+Parameters:
+  StageName:
+    Type: String
+    Default: Prod
+
 Resources:
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+
   ServiceLambda:
     Type: AWS::Serverless::Function
     Properties:
@@ -11,3 +19,10 @@ Resources:
       Runtime: go1.x
       Tracing: Active
       Timeout: 5
+      Events:
+        HttpGet:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Method: GET
+            Path: /hello-world

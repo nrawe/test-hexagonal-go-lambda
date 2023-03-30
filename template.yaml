@@ -7,6 +7,12 @@ Parameters:
     Type: String
     Default: Prod
 
+Globals:
+  Function:
+    Runtime: go1.x
+    Tracing: Active
+    Timeout: 5
+
 Resources:
   HttpApi:
     Type: AWS::Serverless::HttpApi
@@ -16,9 +22,6 @@ Resources:
     Properties:
       CodeUri: todos
       Handler: main
-      Runtime: go1.x
-      Tracing: Active
-      Timeout: 5
       Events:
         HttpGet:
           Type: HttpApi

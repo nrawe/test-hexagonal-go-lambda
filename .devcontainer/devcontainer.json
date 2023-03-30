@@ -1,21 +1,23 @@
 {
-	"name": "Test Hexagonal Go Service",
-	"image": "mcr.microsoft.com/devcontainers/go:0-1.20",
-	"features": {
-		"ghcr.io/devcontainers/features/aws-cli:1": {},
-		"ghcr.io/devcontainers/features/docker-in-docker:2": {},
-		"ghcr.io/customink/codespaces-features/sam-cli:1": {},
-		"ghcr.io/devcontainers-contrib/features/aws-cdk:2": {}
-	},
-	"customizations": {
-		"vscode": {
-			"extensions": [
-				"redhat.vscode-yaml",
-				"amazonwebservices.aws-toolkit-vscode",
-				"golang.go",
-				"streetsidesoftware.code-spell-checker",
-				"tamasfe.even-better-toml"
-			]
-		}
-	}
+  "name": "Test Hexagonal Go Service",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspaces/${localWorkspaceFolderBasename}",
+  "features": {
+    "ghcr.io/devcontainers/features/aws-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {},
+    "ghcr.io/customink/codespaces-features/sam-cli:1": {},
+    "ghcr.io/devcontainers-contrib/features/aws-cdk:2": {}
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "redhat.vscode-yaml",
+        "amazonwebservices.aws-toolkit-vscode",
+        "golang.go",
+        "streetsidesoftware.code-spell-checker",
+        "tamasfe.even-better-toml"
+      ]
+    }
+  }
 }

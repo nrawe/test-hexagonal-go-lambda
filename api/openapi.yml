@@ -1,0 +1,235 @@
+openapi: 3.1
+
+info:
+  title: Tasks API
+  version: 1.0
+  summary: A small API for managing tasks.
+  description: >
+    This API allows users to manage their own tasks efficiently.
+
+    All API calls assume user context from the provided JWT bearer token.
+
+paths:
+  /tasks:
+    get:
+      operationId: GetUserTaskList
+      summary: Returns the list of tasks for the executing user.
+      description: Returns a paginated list of tasks.
+      parameters:
+      - name: before
+        in: query
+        schema: { $ref: '#/components/schemas/Identifier' }
+        description: >
+          Requests that returned tasks are from before this cursor (identifier).
+
+          Cannot be used in conjunction with the 'after' parameter.
+      - name: after
+        in: query
+        schema: { $ref: '#/components/schemas/Identifier' }
+        description: >
+          Requests that returned tasks are from after this cursor (identifier).
+
+          Cannot be used in conjunction with the 'before' parameter.
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 5
+          minimum: 1
+          maximum: 10
+        description: >
+          Requests that the maximum number of tasks to be returned in the list.
+      responses:
+        default: { $ref: '#/components/responses/ServerError' }
+        200: { $ref: '#/components/responses/TaskList' }
+        401: { $ref: '#/components/responses/Unauthorized' }
+        404: { $ref: '#/components/responses/NotFound' }
+    post:
+      operationId: AddNewUserTask
+      summary: Creates the new task for the user.
+      description: The details of the newly created task will be returned.
+      requestBody: { $ref: '#/components/requestBodies/AddNewUserTask' }
+      responses:
+        default: { $ref: '#/components/responses/ServerError' }
+        200: { $ref: '#/components/responses/Task' }
+        401: { $ref: '#/components/responses/Unauthorized' }
+  /tasks/{taskId}:
+    get:
+      operationId: GetUserTask
+      summary: Returns an individual task for a user.
+      parameters:
+      - name: taskId
+        in: path
+        schema: { $ref: '#/components/schemas/Identifier' }
+      responses:
+        default: { $ref: '#/components/responses/ServerError' }
+        200: { $ref: '#/components/responses/Task' }
+        401: { $ref: '#/components/responses/Unauthorized' }
+        404: { $ref: '#/components/responses/NotFound' }
+    post:
+      operationId: UpdateUserTask
+      summary: Updates the details of the given task.
+      parameters:
+      - name: taskId
+        in: path
+        schema: { $ref: '#/components/schemas/Identifier' }
+      requestBody: { $ref: '#/components/requestBodies/UpdateUserTask' }
+      responses:
+        default: { $ref: '#/components/responses/ServerError' }
+        200: { $ref: '#/components/responses/Task' }
+        401: { $ref: '#/components/responses/Unauthorized' }
+        404: { $ref: '#/components/responses/NotFound' }
+
+components:
+  requestBodies:
+    AddNewUserTask:
+      description: Payload describing the new task to be created.
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/NewTask' }
+    UpdateUserTask:
+      description: Payload describing the changes to the given tasks state.
+      required: true
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/UpdateTask' }
+
+  responses:
+    Task:
+      description: The details of a single task.
+      content:
+        application/json:
+          $ref: '#/components/schemas/Task'
+    TaskList:
+      description: List of tasks per the conditions of the request.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/TaskList'
+    NotFound:
+      description: The specified resource could not be found.
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Problem'
+    Unauthorized:
+      description: Unauthorized.
+      content:
+        application/json
+          schema:
+            $ref: '#/components/schemas/Problem'
+    ServerError:
+      description: An unknown error occurred.
+      content:
+        application/json
+          schema:
+            $ref: '#/components/schemas/Problem'
+
+  schemas:
+    Identifier:
+      description: >
+        String representing a unique identifier in the system.
+      type: string
+      required: true
+    Pagination:
+      description: An object describing pagination options
+      type: object
+      required:
+      - cursor
+      properties:
+        cursor:
+          $ref: '#/components/schemas/Identifier'
+    Problem:
+      description: >
+        Representation of an error encountered during request processing.
+        Modelled after RFC 7807 (Problem Details).
+      type: object
+      required:
+        - status
+        - type
+      properties:
+        detail:
+          description: >
+            A human-readable explanation specific to this occurrence of the
+            problem.
+          type: string
+        instance:
+          description: >
+            A URI reference that identifies the specific occurrence of the
+            problem. It may or may not yield further information if
+            dereferenced.
+          type: string
+          format: uri
+        status:
+          description: >
+            The HTTP status code generated by the origin server for this
+            occurrence of the problem.
+          type: number
+        type:
+          description: >
+            A URI reference that identifies the problem type.
+          type: string
+          format: uri
+        title:
+          description: >
+            A short, human-readable summary of the problem type. It SHOULD NOT
+            change from occurrence to occurrence of the problem, except for
+            purposes of localization.
+          type: string
+    NewTask:
+      description: Model representing a new task pending creation.
+      type: object
+      required:
+      - summary
+      properties:
+        summary:
+          type: string
+    Task:
+      description: A single task
+      type: object
+      required:
+      - id
+      - status
+      - summary
+      - created
+      - updated
+      properties:
+        id:
+          $ref: '#/components/schemas/Identifier'
+        status:
+          type: string
+          enum: [open, underway, done]
+        summary:
+          type: string
+        created:
+          type: string
+          format: date-time
+        updated:
+          type: string
+          format: date-time
+    TaskState:
+      description: The states that a task can be in.
+      type: string
+      enum: [open, underway, closed]
+    TaskList:
+      description: A paginated list of tasks
+      type: object
+      required:
+      - tasks
+      - pagination
+      properties:
+        tasks:
+          type: array
+          items: { $ref: '#/components/schemas/Task'}
+        pagination:
+          $ref: '#/components/schemas/Pagination'
+    UpdateTask:
+      description: Payload representing a desired change in task state.
+      type: object
+      properties:
+        summary:
+          type: string
+        state:
+          $ref: '#/components/schemas/TaskState'
+          

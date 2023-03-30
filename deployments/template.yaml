@@ -9,6 +9,7 @@ Parameters:
 
 Globals:
   Function:
+    Handler: main
     Runtime: go1.x
     Tracing: Active
     Timeout: 5
@@ -21,7 +22,6 @@ Resources:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: tasks
-      Handler: main
       Events:
         HttpGet:
           Type: HttpApi

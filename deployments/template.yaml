@@ -21,7 +21,7 @@ Resources:
   ServiceLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: tasks
+      CodeUri: cmd/tasks
       Events:
         HttpGet:
           Type: HttpApi

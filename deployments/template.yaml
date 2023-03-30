@@ -20,7 +20,7 @@ Resources:
   ServiceLambda:
     Type: AWS::Serverless::Function
     Properties:
-      CodeUri: todos
+      CodeUri: tasks
       Handler: main
       Events:
         HttpGet:

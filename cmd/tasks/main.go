@@ -1,35 +1,54 @@
 package main
 
 import (
+	"encoding/json"
+	"log"
+
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
+	"github.com/nrawe/test-hexagonal-go-lambda/internal"
 	"github.com/nrawe/test-hexagonal-go-lambda/tasks"
 )
 
-type HttpGatewayOperationAdapter struct {
+type OperationFactory struct {
 	request events.APIGatewayV2HTTPRequest
 }
 
-func (a HttpGatewayOperationAdapter) GetOperationDetails() (tasks.OperationId, interface{}, error) {
-	path := a.request.RawPath
-	method := a.request.RequestContext.HTTP.Method
+func (f OperationFactory) getTaskList() tasks.TaskListQuery {
+	return tasks.TaskListQuery{}
+}
+
+func (f OperationFactory) Get() internal.Operation {
+	path := f.request.RawPath
+	method := f.request.RequestContext.HTTP.Method
 
 	switch {
 	case path == "/tasks" && method == "GET":
-		return a.getUserTaskList()
+		return f.getTaskList()
 	default:
-		return tasks.OpUnknown, nil, nil
+		return nil
 	}
 }
 
-func (a HttpGatewayOperationAdapter) getUserTaskList() (tasks.OperationId, tasks.GetUserTaskList, error) {
-	op := tasks.GetUserTaskList{}
+func handle(request events.APIGatewayV2HTTPRequest) []byte {
+	app := tasks.Application{}
+	operationFactory := OperationFactory{
+		request: request,
+	}
 
-	return tasks.OpGetUserTaskList, op, nil
-}
+	result, err := app.Run(operationFactory.Get())
 
-func handle() (string, error) {
-	return "Hello world", nil
+	if err != nil {
+		log.Printf("ERROR: application: %s\n", err)
+	}
+
+	payload, err := json.Marshal(result)
+
+	if err != nil {
+		log.Printf("ERROR: service: %s", err)
+	}
+
+	return payload
 }
 
 func main() {

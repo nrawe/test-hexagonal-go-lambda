@@ -1,7 +1,7 @@
 // problem is a minimal implementation of RFC 7807 "Problem Detail" which
 // provides a standard interface for error handling in Web APIs.
 // See: https://www.rfc-editor.org/rfc/rfc7807
-package problem
+package internal
 
 // Problem represents a response to an HTTP Request which has encountered an
 // issue during processing in-line with RFC 7807.

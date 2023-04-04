@@ -1,4 +1,4 @@
-module github.com/nrawe/test-hexagonal-go-lambda
+module github.com/nrawe/tasks-kata
 
 go 1.20
 

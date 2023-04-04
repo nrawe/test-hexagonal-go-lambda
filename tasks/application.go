@@ -1,59 +1,48 @@
 package tasks
 
-import (
-	"net/http"
+import "errors"
 
-	"github.com/nrawe/test-hexagonal-go-lambda/internal"
-)
-
-// Problem templates for use by the application.
 var (
-	ProblemBadRequest = internal.Problem{
-		Title:  "Bad Request",
-		Type:   "https://cooltasksapi.com/problems/bad-request",
-		Status: http.StatusBadRequest,
-	}
+	ErrorUnauthorized  = errors.New("unauthorized")
+	ErrorInvalidLimit  = errors.New("limit must be between 1 and 10")
+	ErrorInvalidCursor = errors.New("after and before cannot both be specified")
 )
 
-// TaskListQuery query represents a request to return a paginated set of
-// tasks for the given user.
-type TaskListQuery struct {
-	After  TaskId
-	Before TaskId
-	Limit  int8
-	UserId string
+type taskApp struct {
+	tr     TaskRepository
+	userId string
 }
 
-func (o TaskListQuery) Validate() error {
-	return nil
+// NewApp returns a pointer to a task application instance.
+func NewApp(userId string, tr TaskRepository) taskApp {
+	return taskApp{
+		tr:     tr,
+		userId: userId,
+	}
 }
 
-// Application main interface for working with tasks.
-type Application struct {
-	Repository TaskRepository
-}
-
-// Run is the input port for the application, allowing for the dispatch of many
-// different operations related to tasks.
-func (a Application) Run(op internal.Operation) (interface{}, error) {
-	err := op.Validate()
-
-	if err != nil {
-		return ProblemBadRequest, err
+// GetTaskList is a use case for the
+func (a taskApp) GetTaskList(limit int8, after, before TaskId) (TaskList, error) {
+	if a.userId == "" {
+		return TaskList{}, ErrorUnauthorized
 	}
 
-	if op, ok := op.(TaskListQuery); ok {
-		return a.runTaskListQuery(op)
+	if limit == 0 {
+		limit = 5
 	}
 
-	return ProblemBadRequest, nil
-}
+	if limit < 1 || limit > 10 {
+		return TaskList{}, ErrorInvalidLimit
+	}
 
-func (a Application) runTaskListQuery(op TaskListQuery) (interface{}, error) {
-	return a.Repository.GetTaskList(
-		op.After,
-		op.Before,
-		op.Limit,
-		op.UserId,
+	if after != "" && before != "" {
+		return TaskList{}, ErrorInvalidCursor
+	}
+
+	return a.tr.GetTaskList(
+		after,
+		before,
+		limit,
+		a.userId,
 	)
 }

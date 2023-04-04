@@ -6,37 +6,13 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/nrawe/test-hexagonal-go-lambda/internal"
-	"github.com/nrawe/test-hexagonal-go-lambda/tasks"
+	"github.com/nrawe/tasks-kata/tasks"
 )
 
-type OperationFactory struct {
-	request events.APIGatewayV2HTTPRequest
-}
-
-func (f OperationFactory) getTaskList() tasks.TaskListQuery {
-	return tasks.TaskListQuery{}
-}
-
-func (f OperationFactory) Get() internal.Operation {
-	path := f.request.RawPath
-	method := f.request.RequestContext.HTTP.Method
-
-	switch {
-	case path == "/tasks" && method == "GET":
-		return f.getTaskList()
-	default:
-		return nil
-	}
-}
-
 func handle(request events.APIGatewayV2HTTPRequest) []byte {
-	app := tasks.Application{}
-	operationFactory := OperationFactory{
-		request: request,
-	}
+	app := tasks.NewApp("", nil)
 
-	result, err := app.Run(operationFactory.Get())
+	result, err := app.GetTaskList(0, "", "")
 
 	if err != nil {
 		log.Printf("ERROR: application: %s\n", err)

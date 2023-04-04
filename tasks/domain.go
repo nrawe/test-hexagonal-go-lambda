@@ -21,12 +21,12 @@ type Task struct {
 }
 
 type TaskList struct {
-	tasks      []Task
-	pagination Paginator
+	tasks      []Task    `json="tasks"`
+	pagination paginator `json="pagination"`
 }
 
-type Paginator struct {
-	cursor TaskId
+type paginator struct {
+	cursor TaskId `json="cursor"`
 }
 
 type TaskRepository interface {

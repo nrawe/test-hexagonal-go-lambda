@@ -6,7 +6,7 @@ import (
 
 	"github.com/aws/aws-lambda-go/events"
 	"github.com/aws/aws-lambda-go/lambda"
-	"github.com/nrawe/tasks-kata/tasks"
+	"github.com/nrawe/tasks-kata/tasks-v1"
 )
 
 func handle(request events.APIGatewayV2HTTPRequest) []byte {
